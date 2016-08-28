@@ -1,0 +1,593 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 10.4' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[     21193,        585]
+NotebookOptionsPosition[     19333,        514]
+NotebookOutlinePosition[     19719,        531]
+CellTagsIndexPosition[     19676,        528]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell["Making a globe from a spherical photo", "Title",
+ CellChangeTimes->{{3.681327976464118*^9, 3.6813279905708027`*^9}}],
+
+Cell[TextData[{
+ "Spherical photos taken with spherical cameras like the Ricoh Theta S can be \
+considered as \[OpenCurlyDoubleQuote]maps\[CloseCurlyDoubleQuote] of a globe. \
+These photos are stored in a rectangular JPEG file as a so-called \
+equirectangular projection in which degrees latitude and longitude correspond \
+linearly to position in the x axis and y axis respectively. To construct a \
+physical globe using these files we may redraw the \[OpenCurlyDoubleQuote]map\
+\[CloseCurlyDoubleQuote] using an interrupted sinusoidal projection, print \
+out the map on paper, cut it out, and glue along the edges to form a globe. \n\
+\nThe ",
+ StyleBox["Mathematica",
+  FontSlant->"Italic"],
+ " code below takes a spherical photo in equirectangular format as input and \
+produces image files of the interrupted sinusoidal projection: one file of \
+the complete map; and another file containing the first and last lobes of the \
+first file drawn as adjacent lobes, as they are on the globe, which we call a \
+patch. The patch can assist in closing the last seem of the constructed \
+globe. The code should work with ",
+ StyleBox["Mathematica 10",
+  FontSlant->"Italic"],
+ " or above.\n\nIf you do anything interesting with this or if you use it in \
+your own classroom I would love to hear about it! However, there is no \
+obligation to do so.\n\nBest regards,\n\nRobert Jacobson",
+ StyleBox["\nrjacobson@rwu.edu",
+  FontSlant->"Italic"]
+}], "Text",
+ CellChangeTimes->{{3.6813280015704308`*^9, 3.6813280407374983`*^9}, {
+  3.681328422609479*^9, 3.681328482870983*^9}, {3.681328543261684*^9, 
+  3.681328664378975*^9}, {3.6813287636008472`*^9, 3.681328840374875*^9}, {
+  3.6813288870466843`*^9, 3.681329095408873*^9}, {3.681329230982047*^9, 
+  3.681329365874854*^9}, {3.681329440458139*^9, 3.681329497615718*^9}, {
+  3.6813295723590727`*^9, 3.6813297048754473`*^9}, {3.68132974016234*^9, 
+  3.681329755362118*^9}, {3.681329862679573*^9, 3.6813298695433397`*^9}, {
+  3.681330394235092*^9, 3.6813304170989447`*^9}, {3.681330852360785*^9, 
+  3.681330910551766*^9}, {3.681336833020425*^9, 3.681336866310079*^9}}],
+
+Cell[TextData[{
+ StyleBox["LICENSE: ",
+  FontSlant->"Italic"],
+ "\[Copyright]",
+ StyleBox["2016 Robert Jacobson? I consider the code in this notebook to be \
+trivial and unworthy of legal protection. In any case, I release this \
+notebook to the public domain. ",
+  FontSlant->"Italic"]
+}], "Text",
+ CellChangeTimes->{{3.681329912574903*^9, 3.68132999847606*^9}, {
+   3.681330055138913*^9, 3.681330115921604*^9}, {3.68133014936068*^9, 
+   3.6813302316550426`*^9}, {3.681330276909965*^9, 3.681330328892511*^9}, {
+   3.681330430179257*^9, 3.681330509808445*^9}, 3.681330712285755*^9, {
+   3.6813307750596123`*^9, 3.68133080241787*^9}}],
+
+Cell[CellGroupData[{
+
+Cell["Initialization Code", "Section",
+ CellChangeTimes->{{3.680279680818522*^9, 3.680279685409381*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{
+   RowBox[{
+    RowBox[{"getSlice", "[", 
+     RowBox[{"\[Lambda]_", ",", " ", "\[CapitalDelta]_", ",", " ", "image_"}],
+      "]"}], ":=", 
+    RowBox[{"Module", "[", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{
+       "width", ",", " ", "height", ",", " ", "lpos", ",", " ", "rpos"}], 
+       "}"}], ",", "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{"width", ",", " ", "height"}], "}"}], "=", 
+        RowBox[{"ImageDimensions", "[", "image", "]"}]}], ";", 
+       "\[IndentingNewLine]", 
+       RowBox[{"lpos", " ", "=", " ", 
+        RowBox[{
+         FractionBox[
+          RowBox[{"(", 
+           RowBox[{"\[Lambda]", "+", "180"}], ")"}], "360"], "*", "width"}]}],
+        ";", "\[IndentingNewLine]", 
+       RowBox[{"rpos", "=", 
+        RowBox[{"lpos", " ", "+", " ", 
+         RowBox[{"width", "*", 
+          FractionBox["\[CapitalDelta]", "360"]}]}]}], ";", 
+       "\[IndentingNewLine]", 
+       RowBox[{"ImageTake", "[", 
+        RowBox[{"image", ",", " ", 
+         RowBox[{"{", 
+          RowBox[{"0", ",", " ", "height"}], "}"}], ",", 
+         RowBox[{"{", 
+          RowBox[{"lpos", ",", " ", "rpos"}], "}"}]}], "]"}]}]}], 
+     "\[IndentingNewLine]", "]"}]}], ";"}], 
+  "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"getGeoGraphics", "[", 
+    RowBox[{"\[Lambda]_", ",", " ", "\[CapitalDelta]_", ",", " ", "image_"}], 
+    "]"}], ":=", 
+   RowBox[{"GeoGraphics", "[", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"GeoBackground", "\[Rule]", 
+      RowBox[{"GeoStyling", "[", 
+       RowBox[{"{", 
+        RowBox[{"\"\<GeoImage\>\"", ",", " ", 
+         RowBox[{"getSlice", "[", 
+          RowBox[{
+          "\[Lambda]", ",", " ", "\[CapitalDelta]", ",", " ", "image"}], 
+          "]"}]}], "}"}], "]"}]}], ",", "\[IndentingNewLine]", 
+     RowBox[{"GeoRange", "\[Rule]", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"-", "90"}], ",", "90"}], "}"}], ",", 
+        RowBox[{"{", 
+         RowBox[{"\[Lambda]", ",", 
+          RowBox[{"\[Lambda]", "+", "\[CapitalDelta]"}]}], "}"}]}], "}"}]}], 
+     ",", "\[IndentingNewLine]", 
+     RowBox[{"GeoProjection", "\[Rule]", 
+      RowBox[{"{", 
+       RowBox[{"\"\<TransverseMercator\>\"", ",", 
+        RowBox[{"\"\<Centering\>\"", "\[Rule]", 
+         RowBox[{"{", 
+          RowBox[{"0", ",", 
+           RowBox[{"\[Lambda]", "+", 
+            RowBox[{"\[CapitalDelta]", "/", "2"}]}]}], "}"}]}]}], "}"}]}], 
+     ",", "\[IndentingNewLine]", 
+     RowBox[{"ImageSize", "\[Rule]", "All"}]}], " ", "\[IndentingNewLine]", 
+    "]"}]}], ";"}]}], "Input",
+ CellChangeTimes->{{3.6800226617859163`*^9, 3.680022719417549*^9}, {
+   3.6802794969978437`*^9, 3.6802795610779057`*^9}, {3.68028010070844*^9, 
+   3.680280129882853*^9}, {3.680283306143648*^9, 3.68028330973426*^9}, {
+   3.681326997499189*^9, 3.681327024858129*^9}, 3.6813274873456917`*^9, {
+   3.681330983078827*^9, 3.681331002391767*^9}, 3.681331114532028*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Image Import", "Section",
+ CellChangeTimes->{{3.680279776351989*^9, 3.680279778927932*^9}}],
+
+Cell[CellGroupData[{
+
+Cell["The image (as a mercator projection) to be printed.", "Subsection",
+ CellChangeTimes->{{3.6802798236312933`*^9, 3.680279843486865*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"mapimage", " ", "=", " ", 
+    RowBox[{
+    "Import", "[", 
+     "\"\</Users/rljacobson/Google Drive/Professional/Mathematical \
+Art/Globes/AcademicQuadSmall.jpg\>\"", "]"}]}], ";"}], 
+  "\[IndentingNewLine]"}]], "Input",
+ CellChangeTimes->{
+  3.680279888310463*^9, {3.680280499976821*^9, 3.680280501532168*^9}, {
+   3.680281311794519*^9, 3.68028131323069*^9}, 3.6802819950837708`*^9, {
+   3.680282327622115*^9, 3.6802823286060133`*^9}, 3.680282471659732*^9, {
+   3.680283328934478*^9, 3.6802833352691517`*^9}, {3.6813270364093*^9, 
+   3.681327044985016*^9}, 3.6813273167863703`*^9}]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Map Generation", "Section",
+ CellChangeTimes->{{3.680279873687272*^9, 3.6802798815983458`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell["Generate the globe.", "Subsection",
+ CellChangeTimes->{{3.680279907029146*^9, 3.680279919189496*^9}, 
+   3.680280014244082*^9, {3.6802811583701468`*^9, 3.680281163049073*^9}}],
+
+Cell[CellGroupData[{
+
+Cell["Some options.", "Subsubsection",
+ CellChangeTimes->{{3.680281186344707*^9, 3.68028121176031*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"imageresolution", " ", "=", " ", "600"}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"filename", " ", "=", " ", "\"\<AcademicQuadGlobe\>\""}], ";"}], 
+  " ", 
+  RowBox[{"(*", " ", 
+   RowBox[{
+   "That", " ", "output", " ", "files", " ", "will", " ", "be", " ", "named", 
+    " ", 
+    RowBox[{"filename", ".", "jpg"}], " ", "and", " ", 
+    RowBox[{"filenamePatch", ".", "jpg"}]}], "*)"}]}], "\[IndentingNewLine]", 
+
+ RowBox[{
+  RowBox[{
+   RowBox[{"\[CapitalDelta]", " ", "=", " ", "30"}], ";"}], " ", 
+  RowBox[{"(*", " ", 
+   RowBox[{"Degrees", " ", "per", " ", 
+    RowBox[{"segment", ".", " ", "So"}], " ", "number", " ", "of", " ", 
+    "segments", " ", "is", " ", 
+    RowBox[{
+     FractionBox["\[CapitalDelta]", "360"], "."}]}], " ", 
+   "*)"}]}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{
+   "SetDirectory", "[", 
+    "\"\</Users/rljacobson/Google Drive/Professional/Mathematical \
+Art/Globes\>\"", "]"}], ";"}], " ", 
+  RowBox[{"(*", " ", 
+   RowBox[{"Output", " ", "files", " ", "are", " ", "stored", " ", 
+    RowBox[{"here", "."}]}], " ", "*)"}]}]}], "Input",
+ CellChangeTimes->{{3.680279925973091*^9, 3.680279945581319*^9}, {
+   3.6802800353407393`*^9, 3.680280044795989*^9}, {3.6802800774443007`*^9, 
+   3.680280083130772*^9}, {3.6802802189785223`*^9, 3.680280274863937*^9}, 
+   3.6802803830392036`*^9, 3.6802805382846527`*^9, {3.680280944174165*^9, 
+   3.680280945036956*^9}, {3.6802812959914923`*^9, 3.680281324511742*^9}, {
+   3.6802820102115498`*^9, 3.680282013227152*^9}, {3.680282315422347*^9, 
+   3.680282318310112*^9}, 3.680282459660972*^9, {3.6802832096637983`*^9, 
+   3.680283210543091*^9}, {3.681327186733774*^9, 3.6813271893097057`*^9}, {
+   3.681327357833829*^9, 3.681327396448904*^9}, {3.681331015133585*^9, 
+   3.6813310611164217`*^9}}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Generate the images.", "Subsubsection",
+ CellChangeTimes->{{3.6802812169935417`*^9, 3.6802812282976007`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"geolst", "=", 
+     RowBox[{"Table", "[", 
+      RowBox[{
+       RowBox[{"getGeoGraphics", "[", 
+        RowBox[{
+        "\[Lambda]", ",", " ", "\[CapitalDelta]", ",", " ", "mapimage"}], 
+        "]"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"\[Lambda]", ",", 
+         RowBox[{"-", "180"}], ",", 
+         RowBox[{"180", "-", "\[CapitalDelta]"}], ",", "\[CapitalDelta]"}], 
+        "}"}]}], "]"}]}], ";", "\[IndentingNewLine]", 
+    RowBox[{"globeimage", "=", 
+     RowBox[{"ImageAssemble", "[", " ", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"Image", "[", 
+         RowBox[{"#", ",", " ", 
+          RowBox[{"ImageResolution", "\[Rule]", "imageresolution"}]}], "]"}], 
+        "&"}], "/@", "geolst"}], " ", "]"}]}], ";", "\[IndentingNewLine]", 
+    RowBox[{"Export", "[", 
+     RowBox[{
+      RowBox[{"filename", "<>", "\"\<.jpg\>\""}], ",", " ", "globeimage"}], 
+     "]"}]}], ",", "\[IndentingNewLine]", "\[IndentingNewLine]", 
+   RowBox[{"Export", "[", 
+    RowBox[{
+     RowBox[{"filename", "<>", "\"\<Patch.jpg\>\""}], ",", 
+     RowBox[{"ImageAssemble", "[", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"Image", "[", 
+         RowBox[{"#", ",", " ", 
+          RowBox[{"ImageResolution", "\[Rule]", "imageresolution"}]}], "]"}], 
+        "&"}], "/@", 
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"geolst", "[", 
+          RowBox[{"[", 
+           RowBox[{"-", "1"}], "]"}], "]"}], ",", " ", 
+         RowBox[{"geolst", "[", 
+          RowBox[{"[", "1", "]"}], "]"}]}], "}"}]}], "]"}]}], "]"}]}], 
+  "}"}]], "Input",
+ CellChangeTimes->{{3.680016608090523*^9, 3.680016667264793*^9}, {
+   3.680022189481658*^9, 3.680022210370286*^9}, {3.68002248605264*^9, 
+   3.6800224896765413`*^9}, 3.680022539869416*^9, {3.680022769064423*^9, 
+   3.680022770728017*^9}, 3.6802800255106363`*^9, {3.68028031493649*^9, 
+   3.6802803177202883`*^9}, 3.680280375184877*^9, {3.680280948645224*^9, 
+   3.680280952356928*^9}, {3.6802810858277197`*^9, 3.680281107795185*^9}}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{"\<\"AcademicQuadGlobe.jpg\"\>", 
+   ",", "\<\"AcademicQuadGlobePatch.jpg\"\>"}], "}"}]], "Output",
+ CellChangeTimes->{3.6800225063211327`*^9, 3.680022620964581*^9, 
+  3.680280676737802*^9, 3.6802814521065702`*^9, 3.6802821282817497`*^9, 
+  3.6802824524736233`*^9, 3.680282599932168*^9, 3.680283464757737*^9, 
+  3.681327374342186*^9}]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["\<\
+Optional \[OpenCurlyDoubleQuote]blank\[CloseCurlyDoubleQuote] map consisting \
+of a line of latitude and longitude every 10 degrees.\
+\>", "Subsection",
+ CellChangeTimes->{{3.680279693986602*^9, 3.6802797614161463`*^9}}],
+
+Cell["\<\
+Change the filename and image size in the code below to suite taste.\
+\>", "Text",
+ CellChangeTimes->{{3.681327152718302*^9, 3.68132717140591*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"blankmap", "=", 
+   RowBox[{"ImageAssemble", "[", 
+    RowBox[{
+     RowBox[{
+      RowBox[{"Image", "[", 
+       RowBox[{"#", ",", " ", 
+        RowBox[{"ImageResolution", "\[Rule]", "imageresolution"}]}], "]"}], 
+      "&"}], "/@", 
+     RowBox[{"Table", "[", 
+      RowBox[{
+       RowBox[{"GeoGraphics", "[", 
+        RowBox[{
+         RowBox[{"GeoBackground", "\[Rule]", "None"}], ",", 
+         RowBox[{"GeoRange", "\[Rule]", 
+          RowBox[{"{", 
+           RowBox[{
+            RowBox[{"{", 
+             RowBox[{
+              RowBox[{"-", "90"}], ",", "90"}], "}"}], ",", 
+            RowBox[{"{", 
+             RowBox[{"\[Lambda]", ",", 
+              RowBox[{"\[Lambda]", "+", "\[CapitalDelta]"}]}], "}"}]}], 
+           "}"}]}], ",", 
+         RowBox[{"GeoProjection", "\[Rule]", 
+          RowBox[{"{", 
+           RowBox[{"\"\<TransverseMercator\>\"", ",", 
+            RowBox[{"\"\<Centering\>\"", "\[Rule]", 
+             RowBox[{"{", 
+              RowBox[{"0", ",", 
+               RowBox[{"\[Lambda]", "+", 
+                RowBox[{"\[CapitalDelta]", "/", "2"}]}]}], "}"}]}]}], "}"}]}],
+          ",", 
+         RowBox[{"ImageSize", "\[Rule]", "Small"}], ",", 
+         RowBox[{"GeoGridLines", "\[Rule]", 
+          RowBox[{"Quantity", "[", 
+           RowBox[{"10", ",", "\"\<AngularDegrees\>\""}], "]"}]}], ",", 
+         RowBox[{"GeoGridLinesStyle", "\[Rule]", 
+          RowBox[{"GrayLevel", "[", 
+           RowBox[{"0.4", ",", "0.5"}], "]"}]}]}], "]"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"\[Lambda]", ",", 
+         RowBox[{"-", "180"}], ",", 
+         RowBox[{"180", "-", "\[CapitalDelta]"}], ",", "\[CapitalDelta]"}], 
+        "}"}]}], "]"}]}], "]"}]}], ";"}], "\n", 
+ RowBox[{"Export", "[", 
+  RowBox[{"\"\<blankglobe.jpg\>\"", ",", " ", "blankmap", ",", " ", 
+   RowBox[{"ImageSize", "\[Rule]", 
+    RowBox[{"{", 
+     RowBox[{"7080", ",", " ", "3500"}], "}"}]}]}], 
+  "]"}], "\[IndentingNewLine]"}], "Input",
+ CellChangeTimes->{{3.679945900312962*^9, 3.679945900313843*^9}, {
+   3.680017518594242*^9, 3.680017539936657*^9}, {3.6800177042544117`*^9, 
+   3.680017784277226*^9}, {3.680017844780869*^9, 3.6800178451317997`*^9}, {
+   3.6800179200193987`*^9, 3.680017924338869*^9}, {3.6800180021527033`*^9, 
+   3.680018002472535*^9}, 3.6813271016562557`*^9, {3.681327132247677*^9, 
+   3.681327135520351*^9}}],
+
+Cell[BoxData["\<\"blankglobe.jpg\"\>"], "Output",
+ CellChangeTimes->{{3.680017522046837*^9, 3.680017542135103*^9}, 
+   3.6800176184194307`*^9, 3.680017802577458*^9, 3.680017946840332*^9, 
+   3.680018019598884*^9}]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Some \[OpenCurlyDoubleQuote]test\[CloseCurlyDoubleQuote] code.", \
+"Subsection",
+ CellChangeTimes->{{3.6802803319628477`*^9, 3.680280343006599*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Export", "[", 
+  RowBox[{"\"\<test.jpg\>\"", ",", " ", 
+   RowBox[{"getGeoGraphics", "[", 
+    RowBox[{"0", ",", " ", "30", ",", " ", "mapimage"}], "]"}], ",", " ", 
+   RowBox[{"ImageResolution", "\[Rule]", "imageresolution"}]}], 
+  "]"}]], "Input",
+ CellChangeTimes->{{3.680017310508214*^9, 3.680017364187252*^9}, {
+  3.680017878298749*^9, 3.6800178896981783`*^9}, {3.680022149306101*^9, 
+  3.680022152722*^9}, {3.6802799489654512`*^9, 3.680279958583679*^9}}],
+
+Cell[BoxData["\<\"test.jpg\"\>"], "Output",
+ CellChangeTimes->{3.6800173169621677`*^9, 3.680017367444068*^9, 
+  3.680022471667158*^9}]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["\<\
+An alternative method by creating separate images for each segment.\
+\>", "Subsection",
+ CellChangeTimes->{{3.680279977750156*^9, 3.680280009420105*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"filenames", "=", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"StringJoin", "[", 
+      RowBox[{"filename", ",", " ", 
+       RowBox[{"ToString", "[", "#", "]"}], ",", " ", "\"\<.jpg\>\""}], "]"}],
+      "&"}], "/@", 
+    RowBox[{"Range", "[", "12", "]"}]}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{"MapThread", "[", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"Export", "[", 
+     RowBox[{"#1", ",", " ", "#2", ",", " ", 
+      RowBox[{"ImageResolution", "\[Rule]", "imageresolution"}]}], "]"}], 
+    "&"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"filenames", ",", " ", "wetlablst"}], "}"}]}], " ", 
+  "]"}]}], "Input",
+ CellChangeTimes->{{3.6800171427116547`*^9, 3.680017233957376*^9}, {
+   3.680279621339738*^9, 3.6802796286427402`*^9}, 3.6802799640314007`*^9, 
+   3.6813365783246317`*^9}],
+
+Cell[BoxData[
+ RowBox[{"Export", "[", 
+  RowBox[{
+   RowBox[{"filename", "<>", "\"\<.jpg\>\""}], ",", 
+   RowBox[{"ImageAssemble", "[", " ", 
+    RowBox[{
+     RowBox[{
+      RowBox[{"Image", "[", 
+       RowBox[{"#", ",", " ", 
+        RowBox[{"ImageResolution", "\[Rule]", "imageresolution"}]}], "]"}], 
+      "&"}], "/@", "geolst"}], " ", "]"}]}], "]"}]], "Input",
+ CellChangeTimes->{{3.680016761328166*^9, 3.680016766174803*^9}, {
+   3.680022215027418*^9, 3.680022222693924*^9}, 3.680022778377007*^9, 
+   3.680279969559332*^9, {3.681336550670576*^9, 3.681336556221058*^9}}]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["A 3D preview of the resulting globe", "Section",
+ CellChangeTimes->{{3.68028015826628*^9, 3.680280176201305*^9}}],
+
+Cell[BoxData[
+ RowBox[{"SphericalPlot3D", "[", 
+  RowBox[{"1", ",", 
+   RowBox[{"{", 
+    RowBox[{"u", ",", "0", ",", "Pi"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"v", ",", "0", ",", 
+     RowBox[{"2", " ", "Pi"}]}], "}"}], ",", 
+   RowBox[{"PlotPoints", "\[Rule]", "50"}], ",", 
+   RowBox[{"MaxRecursion", "\[Rule]", "0"}], ",", 
+   RowBox[{"Mesh", "\[Rule]", "None"}], ",", 
+   RowBox[{"Axes", "\[Rule]", "False"}], ",", " ", 
+   RowBox[{"TextureCoordinateFunction", "\[Rule]", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"#5", ",", 
+        RowBox[{"1", "-", "#4"}]}], "}"}], "&"}], ")"}]}], ",", 
+   RowBox[{"PlotStyle", "\[Rule]", 
+    RowBox[{"Directive", "[", 
+     RowBox[{
+      RowBox[{"Texture", "[", "mapimage", "]"}], ",", 
+      RowBox[{"Specularity", "[", 
+       RowBox[{"White", ",", "50"}], "]"}]}], "]"}]}], ",", 
+   RowBox[{"Lighting", "\[Rule]", "\"\<Neutral\>\""}]}], "]"}]], "Input",
+ CellChangeTimes->{{3.679949324130884*^9, 3.679949337400263*^9}, {
+  3.6799494067086487`*^9, 3.679949447603108*^9}, {3.6799494891557617`*^9, 
+  3.679949504243301*^9}}]
+}, Open  ]]
+}, Open  ]]
+},
+WindowSize->{1234, 1292},
+WindowMargins->{{240, Automatic}, {Automatic, 0}},
+Magnification:>2. Inherited,
+FrontEndVersion->"10.4 for Mac OS X x86 (32-bit, 64-bit Kernel) (April 11, \
+2016)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[580, 22, 122, 1, 292, "Title"],
+Cell[705, 25, 2108, 34, 858, "Text"],
+Cell[2816, 61, 633, 13, 136, "Text"],
+Cell[CellGroupData[{
+Cell[3474, 78, 104, 1, 127, "Section"],
+Cell[3581, 81, 3058, 78, 643, "Input"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[6676, 164, 97, 1, 127, "Section"],
+Cell[CellGroupData[{
+Cell[6798, 169, 141, 1, 87, "Subsection"],
+Cell[6942, 172, 630, 14, 189, "Input"]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[7621, 192, 101, 1, 127, "Section"],
+Cell[CellGroupData[{
+Cell[7747, 197, 181, 2, 87, "Subsection"],
+Cell[CellGroupData[{
+Cell[7953, 203, 103, 1, 68, "Subsubsection"],
+Cell[8059, 206, 1842, 43, 337, "Input"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[9938, 254, 115, 1, 68, "Subsubsection"],
+Cell[CellGroupData[{
+Cell[10078, 259, 2048, 51, 354, "Input"],
+Cell[12129, 312, 373, 7, 112, "Output"]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[12563, 326, 230, 4, 272, "Subsection"],
+Cell[12796, 332, 157, 3, 120, "Text"],
+Cell[CellGroupData[{
+Cell[12978, 339, 2381, 57, 774, "Input"],
+Cell[15362, 398, 213, 3, 112, "Output"]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[15624, 407, 154, 2, 174, "Subsection"],
+Cell[CellGroupData[{
+Cell[15803, 413, 484, 9, 180, "Input"],
+Cell[16290, 424, 134, 2, 112, "Output"]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[16473, 432, 163, 3, 272, "Subsection"],
+Cell[16639, 437, 812, 22, 312, "Input"],
+Cell[17454, 461, 577, 13, 246, "Input"]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[18080, 480, 119, 1, 254, "Section"],
+Cell[18202, 483, 1103, 27, 378, "Input"]
+}, Open  ]]
+}, Open  ]]
+}
+]
+*)
+
